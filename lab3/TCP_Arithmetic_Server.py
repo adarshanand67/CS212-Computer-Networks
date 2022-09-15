@@ -7,7 +7,7 @@ s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
 # bind the socket to a host and a port
 host = 'localhost'
-port = 43390  # arbitrarily chosen non-privileged port number
+port = 3000  # arbitrarily chosen non-privileged port number
 s.bind((host,port))
 print("Server started...waiting for a connection from the client")
 
