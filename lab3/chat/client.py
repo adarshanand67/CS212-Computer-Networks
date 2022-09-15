@@ -2,7 +2,7 @@ import socket
 import threading
 
 IP = socket.gethostbyname(socket.gethostname())
-PORT = 5000
+PORT = 5001
 ADDR = (IP, PORT)
 SIZE = 1024
 FORMAT = 'utf-8'
@@ -13,7 +13,8 @@ def main():
     client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     client.connect(ADDR)
     print(f"[CONNECTED] Connected to {IP}:{PORT}")
-
+    name = input("Enter your name: ")
+    client.send(name.encode(FORMAT))
     connected = True
     while connected:
         msg = input("> ")

@@ -2,13 +2,14 @@ import socket
 import threading
 
 IP = socket.gethostbyname(socket.gethostname())
-PORT = 5000
+PORT = 5001
 ADDR = (IP, PORT)
 SIZE = 1024
 FORMAT = 'utf-8'
 DISCONNECT_MESSAGE = "!DISCONNECT"
 
 clients = []
+clientname = {}
 
 def handle_client(conn, addr):
     print(f"[NEW CONNECTION] {addr} connected.")
@@ -19,8 +20,8 @@ def handle_client(conn, addr):
         if msg == DISCONNECT_MESSAGE:
             connected = False
 
-        print(f"[{addr}] {msg}")
-        msg = f"{addr} : {msg}"
+        print(f"[{clientname[addr]}] {msg}")
+        msg = f"{clientname[addr]} : {msg}"
         # conn.send(msg.encode(FORMAT))
         for client in clients:
             client[0].send(msg.encode(FORMAT))
@@ -38,6 +39,8 @@ def main():
     while True:
         conn, addr = server.accept()
         clients.append((conn,addr))
+        name = conn.recv(SIZE).decode(FORMAT)
+        clientname[addr] = name
         thread = threading.Thread(target=handle_client, args=(conn, addr))
         thread.start()
         # -1 because of the main thread
