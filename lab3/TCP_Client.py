@@ -18,7 +18,7 @@ s=socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
 # connect to the server
 host='localhost'
-port=43389  # this is the server's port number, which the client needs to know
+port=50000  # this is the server's port number, which the client needs to know
 s.connect((host,port))
 
 # send some bytes

@@ -16,7 +16,7 @@ s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 				# use SOCK_DGRAM for UDP
 
 # bind it to a host and a port
-host = 'localhost'
+host = '10.196.8.29'
 port = 43389  # arbitrarily chosen non-privileged port number
 s.bind((host,port))
 print("Server started...waiting for a connection from the client")
