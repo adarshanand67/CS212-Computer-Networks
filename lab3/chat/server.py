@@ -1,49 +1,63 @@
-import socket
-import threading
+'''
+Member 1: Aniket Akshay Chaudhri (2003104)
+Member 2: Adarsh Anand (2003101)
+'''
 
-IP = socket.gethostbyname(socket.gethostname())
-PORT = 5001
-ADDR = (IP, PORT)
-SIZE = 1024
-FORMAT = 'utf-8'
-DISCONNECT_MESSAGE = "!DISCONNECT"
+import socket   # import socket module
+import threading    # import threading module
 
-clients = []
-clientname = {}
+IP = socket.gethostbyname(socket.gethostname())  # get IP address
+PORT = 5001  # set port and size
+ADDR = (IP, PORT)   # set address and size
+SIZE = 1024   # set size of message
+FORMAT = 'utf-8'    # set format of message
+DISCONNECT_MESSAGE = "q"  # set disconnect message
+
+clients = []    # list of clients and their names
+clientname = {}  # run main function if this file is run
+
 
 def handle_client(conn, addr):
-    print(f"[NEW CONNECTION] {addr} connected.")
+    ''' function that handles each client '''
+    print(f"[NEW CONNECTION] {clientname[addr]} connected.")
 
     connected = True
     while connected:
-        msg = conn.recv(SIZE).decode(FORMAT)
+        msg = conn.recv(SIZE).decode(FORMAT)    # get message from client
         if msg == DISCONNECT_MESSAGE:
             connected = False
 
         print(f"[{clientname[addr]}] {msg}")
-        msg = f"{clientname[addr]} : {msg}"
+        msg = f"{clientname[addr]} : {msg}\n"  # add name to message
         # conn.send(msg.encode(FORMAT))
         for client in clients:
-            client[0].send(msg.encode(FORMAT))
+            client[0].send(msg.encode(FORMAT))  # send message to all clients
 
-    conn.close()
+    conn.close()    # close connection
 
 
 def main():
+    ''' main function '''
     print("[STARTING] Server is starting...")
-    server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    server.bind(ADDR)
-    server.listen()
+    server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)  # create socket
+    server.bind(ADDR)   # bind socket to address
+
+    server.listen()    # start listening for connections
+    # print listening message
     print(f"[LISTENING] Server is listening on {IP}:{PORT}")
 
     while True:
-        conn, addr = server.accept()
-        clients.append((conn,addr))
-        name = conn.recv(SIZE).decode(FORMAT)
-        clientname[addr] = name
-        thread = threading.Thread(target=handle_client, args=(conn, addr))
-        thread.start()
-        # -1 because of the main thread
+        conn, addr = server.accept()  # accept new connection
+        clients.append((conn, addr))  # add new connection to clients list
+
+        name = conn.recv(SIZE).decode(FORMAT)   # get name of client
+        clientname[addr] = name  # add name to clientname dictionary
+
+        thread = threading.Thread(target=handle_client, args=(
+            conn, addr))  # create new thread for each client
+        thread.start()  # start thread
+
+        # print number of active connections
         print(f"[ACTIVE CONNECTIONS] {threading.activeCount() - 1}")
 
 

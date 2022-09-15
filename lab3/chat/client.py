@@ -1,29 +1,39 @@
-import socket
-import threading
+'''
+Member 1: Aniket Akshay Chaudhri (2003104)
+Member 2: Adarsh Anand (2003101)
+'''
 
-IP = socket.gethostbyname(socket.gethostname())
-PORT = 5001
-ADDR = (IP, PORT)
-SIZE = 1024
-FORMAT = 'utf-8'
-DISCONNECT_MESSAGE = "!DISCONNECT"
+import socket   # import socket module
+import threading    # import threading module
+
+IP = socket.gethostbyname(socket.gethostname())  # get IP address
+PORT = 5001  # set port and size
+ADDR = (IP, PORT)   # set address and size
+SIZE = 1024   # set size of message
+FORMAT = 'utf-8'    # set format of message
+DISCONNECT_MESSAGE = "q"  # set disconnect message
 
 
 def main():
+    ''' main function '''
+    # create client socket
     client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    client.connect(ADDR)
-    print(f"[CONNECTED] Connected to {IP}:{PORT}")
-    name = input("Enter your name: ")
-    client.send(name.encode(FORMAT))
+    client.connect(ADDR)    # connect to server
+
+    print(f"[CONNECTED] Connected to {IP}:{PORT}")  # print connected message
+
+    name = input("Enter your name: ")   # get name from user
+    client.send(name.encode(FORMAT))    # send name to server
+
     connected = True
     while connected:
-        msg = input("> ")
-        client.send(msg.encode(FORMAT))
+        msg = input("> ")   # get message from user
+        client.send(msg.encode(FORMAT))  # send message to server
         if msg == DISCONNECT_MESSAGE:
             connected = False
-        # else:
-        msg = client.recv(SIZE).decode(FORMAT)
-        print(f"[SERVER] {msg}")
+        msg = client.recv(SIZE).decode(FORMAT)  # get message from server
+        print(f"[SERVER] {msg}")    # print message from server
+
 
 if __name__ == "__main__":
     main()
