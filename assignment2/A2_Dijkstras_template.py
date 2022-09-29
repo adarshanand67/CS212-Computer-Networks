@@ -2,6 +2,13 @@
 
 # Author: Dr. Neha Karanjkar
 
+'''
+	Team Members:
+1. Aniket Akshay Chaudhri (2003104)
+2. Adarsh Anand (2003101)
+
+Date - 29 September 2022
+'''
 
 import random
 import math
@@ -111,13 +118,16 @@ def PrintTable(source_node, graph, label, D, p, done_nodes, step, min_node):
         for i in range(len(graph)):
             # if current node is the minimum node, print * before the distance
             if i == min_node:
-                print(f"*{D[i]},{label(p[i])}\t", end="")
+                print(f"*{D[i]},{label(p[i])}\t\t", end="")
             else:
                 # if source node, print 0, source node
                 if i == source_node:
-                    print(f"0,{label(source_node)}\t", end="")
+                    print(f"0,{label(source_node)}\t\t", end="")
                 else:
-                    print(f"{D[i]},{label(p[i])}\t", end="")
+                    if (D[i] == INF):
+                        print(f"0,{label(source_node)}\t", end="")
+                    else:
+                        print(f"{D[i]},{label(p[i])}\t\t", end="")
         print(done_nodes)
 
 
