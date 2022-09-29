@@ -17,9 +17,9 @@ s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
 
 # connect to the server
-host = '10.196.9.29'
-port = 43389  # this is the server's port number, which the client needs to know
-s.connect((host, port))
+host='localhost'
+port=50000  # this is the server's port number, which the client needs to know
+s.connect((host,port))
 
 # send some bytes
 s.send("Knock knock..".encode('utf-8'))
