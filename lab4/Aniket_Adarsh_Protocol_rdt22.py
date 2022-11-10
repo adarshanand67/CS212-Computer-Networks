@@ -1,4 +1,9 @@
 # SimPy model for the Reliable Data Transport (rdt) Protocol 2.2 (Using ACK and NAK)
+'''
+Team Members:
+    1. Aniket Akshay Chaudhri (2003104)
+    2. Adarsh Anand (2003101)
+'''
 
 import simpy
 import random
@@ -36,9 +41,9 @@ class rdt_Sender(object):
 
             # create a packet, and save a copy of this packet
             # for retransmission, if needed
+            self.seq_num = 0
             self.packet_to_be_sent = Packet(seq_num=self.seq_num, payload=msg)
-            self.seq_num += 1
-
+            
             # start time
             self.start_time = self.env.now
 
@@ -53,9 +58,9 @@ class rdt_Sender(object):
 
             # create a packet, and save a copy of this packet
             # for retransmission, if needed
+            self.seq_num = 1
             self.packet_to_be_sent = Packet(seq_num=self.seq_num, payload=msg)
-            self.seq_num += 1
-
+            
             # start time
             self.start_time = self.env.now
 
@@ -70,41 +75,23 @@ class rdt_Sender(object):
     def rdt_rcv(self, packt):
         # This function is called by the lower-layer
         # when an ACK/NAK packet arrives
-        # if packt.payload == "ACK 0":
-        #     if self.state == WAIT_FOR_ACK_0:
-        #         self.state = WAITING_FOR_CALL_1_FROM_ABOVE
-        #         self.end_time = self.env.now
-        #         self.rtt.append(self.end_time - self.start_time)
-        #         # return True
-        #     else:
-        #         self.channel.udt_send(self.packet_to_be_sent)
-        #         return False
-        # elif packt.payload == "ACK 1":
-        #     if self.state == WAIT_FOR_ACK_1:
-        #         self.state = WAITING_FOR_CALL_0_FROM_ABOVE
-        #         return True
-        #     else:
-        #         self.channel.udt_send(self.packet_to_be_sent)
-        #         return False
-
-        if (packt.payload=="ACK 0"):
-
-            if(self.state==WAIT_FOR_ACK_0):
-                self.state=WAITING_FOR_CALL_1_FROM_ABOVE
+       
+        if self.state == WAIT_FOR_ACK_0:
+            if packt.payload == "ACK" and packt.seq_num == 0:
+                # packet is fine
                 self.end_time = self.env.now
                 self.rtt.append(self.end_time - self.start_time)
-                # return True
+                self.state = WAITING_FOR_CALL_1_FROM_ABOVE
             else:
-                self.channel.udt_send(self.packet_to_be_sent)
-
-        elif(packt.payload=="ACK 1"):
-            if(self.state==WAIT_FOR_ACK_1):
-                self.state=WAITING_FOR_CALL_0_FROM_ABOVE
+                self.channel.udt_send(self.packet_to_be_sent) # retransmit
+        elif self.state == WAIT_FOR_ACK_1:
+            if packt.payload == "ACK" and packt.seq_num == 1:
+                # packet is fine
                 self.end_time = self.env.now
                 self.rtt.append(self.end_time - self.start_time)
-                # return True
+                self.state = WAITING_FOR_CALL_0_FROM_ABOVE
             else:
-                self.channel.udt_send(self.packet_to_be_sent)
+                self.channel.udt_send(self.packet_to_be_sent) # retransmit
 
 
 class rdt_Receiver(object):
@@ -112,6 +99,7 @@ class rdt_Receiver(object):
         # Initialize variables
         self.env = env
         self.channel = None
+        self.receiving_app = None
 
         # some state variables
         self.state = WAITING_FOR_CALL_0_FROM_ABOVE
@@ -121,19 +109,18 @@ class rdt_Receiver(object):
     def rdt_rcv(self, packt):
         # This function is called by the lower-layer
         # when a packet arrives
-        if(self.state == WAITING_FOR_CALL_0_FROM_ABOVE):
-            if(packt.seq_num == 0):
-                self.channel.udt_send(Packet(seq_num=0, payload="ACK 0"))
+        if self.state == WAITING_FOR_CALL_0_FROM_ABOVE:
+            if packt.corrupted or packt.seq_num == 1: # packet is corrupted or not the one expected
+                self.channel.udt_send(Packet(seq_num=1, payload="ACK"))
+            else: # packet is fine
+                self.receiving_app.deliver_data(packt.payload)
+                self.channel.udt_send(Packet(seq_num=0, payload="ACK"))
                 self.state = WAITING_FOR_CALL_1_FROM_ABOVE
+        
+        elif self.state == WAITING_FOR_CALL_1_FROM_ABOVE:
+            if packt.corrupted or packt.seq_num == 0: # packet is corrupted or not the one expected
+                self.channel.udt_send(Packet(seq_num=0, payload="ACK"))
+            else: # packet is fine
                 self.receiving_app.deliver_data(packt.payload)
-            else:
-                self.channel.udt_send(Packet(seq_num=0, payload="ACK 1"))
-                # return None
-        elif(self.state == WAITING_FOR_CALL_1_FROM_ABOVE):
-            if(packt.seq_num == 1):
-                self.channel.udt_send(Packet(seq_num=1, payload="ACK 1"))
+                self.channel.udt_send(Packet(seq_num=1, payload="ACK"))
                 self.state = WAITING_FOR_CALL_0_FROM_ABOVE
-                self.receiving_app.deliver_data(packt.payload)
-            else:
-                self.channel.udt_send(Packet(seq_num=1, payload="NAK 1"))
-                # return None
